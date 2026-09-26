@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI 客服质检裁定台 · MVP Demo</title>
+<style>
+:root{
+  --bg:#f5f7fa; --l:#e5e9f0; --t:#1a2332; --m:#6b7789; --m2:#9aa5b5;
+  --b:#2f6df6; --bs:#eef3ff; --g:#16a05a; --gs:#eaf7ef;
+  --o:#c77a00; --os:#fff5e6; --r:#df2c2c; --rs:#fff0f0;
+  --sh:0 4px 16px rgba(20,30,50,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--t);background:var(--bg);font-size:14px;line-height:1.6}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select{font:inherit}
+a{color:var(--b);text-decoration:none}
+
+header{height:56px;background:#fff;border-bottom:1px solid var(--l);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.logo{width:28px;height:28px;border-radius:7px;background:#1a2332;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
+.tag{font-size:11px;padding:4px 9px;border-radius:6px;background:var(--bs);color:var(--b);font-weight:600}
+
+/* 顶部介绍 */
+.sw{padding:18px 24px 6px;max-width:1440px;margin:0 auto}
+.intro-bar{background:#fff;border:1px solid var(--l);border-radius:12px;box-shadow:var(--sh);padding:18px 22px;margin-bottom:14px;display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.intro-body{flex:1;min-width:260px}
+.intro-t{font-size:14px;font-weight:800;margin:0 0 5px;letter-spacing:-.1px}
+.intro-d{font-size:12.5px;line-height:1.75;color:var(--m);margin:0}
+.intro-tag{font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:6px;background:var(--bs);color:var(--b);flex:none;white-space:nowrap}
+
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.stat{background:#fff;border:1px solid var(--l);border-radius:12px;box-shadow:var(--sh);padding:16px 18px}
+.sv{font-size:26px;font-weight:800;line-height:1.1}
+.sv.b{color:var(--b)}.sv.g{color:var(--g)}.sv.o{color:var(--o)}.sv.r{color:var(--r)}
+.sv .mx{font-size:12px;color:var(--m2);font-weight:500;margin-left:2px}
+.sl{font-size:12px;color:var(--m);margin-top:6px}
+
+.wb{display:grid;grid-template-columns:320px 1fr;gap:16px;padding:16px 24px 40px;max-width:1440px;margin:0 auto;align-items:start}
+.side{background:#fff;border:1px solid var(--l);border-radius:12px;box-shadow:var(--sh);overflow:hidden;position:sticky;top:74px;max-height:calc(100vh - 96px);display:flex;flex-direction:column}
+.sh{padding:14px 16px;border-bottom:1px solid var(--l);display:flex;gap:8px;align-items:center;flex:none}
+.sh .t{font-size:13px;font-weight:700;flex:1}
+.sh .c{font-size:11px;color:var(--m2)}
+.sr-wrap{padding:10px 12px 0;flex:none}
+.sr{width:100%;height:32px;border:1px solid var(--l);border-radius:7px;padding:0 10px;font-size:12px;outline:none;background:#fafbfc}
+.sr:focus{border-color:var(--b);background:#fff}
+.filters{padding:10px 12px;border-bottom:1px solid var(--l);display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:none}
+.filters select{height:30px;border:1px solid var(--l);border-radius:6px;font-size:12px;padding:0 8px;background:#fff;outline:none}
+.list{overflow-y:auto;padding:6px;flex:1;min-height:0}
+.item{width:100%;text-align:left;padding:10px 12px;border-radius:8px;margin-bottom:2px}
+.item:hover{background:#f7f9fc}
+.item.active{background:var(--bs)}
+.it{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.iid{font-size:11px;font-weight:700;color:var(--m)}
+.isc{font-size:12px;font-weight:800}
+.iq{font-size:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.itags{display:flex;gap:4px;margin-top:6px}
+.bdg{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
+.bdg.pass{background:var(--gs);color:var(--g)}
+.bdg.opt{background:var(--os);color:var(--o)}
+.bdg.fail{background:var(--rs);color:var(--r)}
+.bdg.rh{background:var(--rs);color:var(--r)}
+.bdg.rm{background:var(--os);color:var(--o)}
+.bdg.rl{background:var(--gs);color:var(--g)}
+
+.report{background:#fff;border:1px solid var(--l);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.verdict{display:flex;gap:24px;align-items:center;flex-wrap:wrap;padding:22px 28px;background:linear-gradient(135deg,#fff 0%,#f8fafd 100%);border-bottom:1px solid var(--l)}
+.vd-main{flex:1;min-width:260px}
+.vd-r1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vd-id{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.vd-cat{font-size:12px;color:var(--m);margin-top:3px}
+.vd-line{font-size:13px;line-height:1.75;color:#3a4658;margin-top:12px;padding-top:12px;border-top:1px dashed var(--l)}
+.vd-line b{color:var(--r);font-weight:700}
+.vd-line.ok b{color:var(--g)}
+.vd-score{text-align:center;padding:0 22px;border-left:1px solid var(--l);border-right:1px solid var(--l);flex:none}
+.vd-num{font-size:40px;font-weight:800;line-height:1;letter-spacing:-1px}
+.vd-num small{font-size:14px;color:var(--m2);font-weight:600;letter-spacing:0}
+.vd-num.g{color:var(--g)}.vd-num.o{color:var(--o)}.vd-num.r{color:var(--r)}
+.vd-lab{font-size:11px;color:var(--m);margin-top:6px;letter-spacing:.5px}
+
+.blk{padding:24px 28px;border-bottom:1px solid var(--l)}
+.blk:last-child{border-bottom:0}
+.blk-h{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.blk-t{font-size:13px;font-weight:800;letter-spacing:.3px}
+.blk-t:before{content:"";display:inline-block;width:3px;height:12px;background:var(--t);border-radius:2px;margin-right:8px;vertical-align:-1px}
+.blk-sub{font-size:11.5px;color:var(--m2);font-weight:400}
+.blk-side{margin-left:auto;display:flex;gap:6px;align-items:center}
+
+.chat{display:flex;flex-direction:column;gap:16px}
+.turn{display:flex;gap:10px;align-items:flex-start}
+.av{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none;margin-top:2px}
+.av.u{background:#eef1f6;color:var(--m)}
+.av.ai{background:#1a2332;color:#fff}
+.turn-body{display:flex;flex-direction:column;gap:9px;max-width:calc(100% - 38px)}
+.bub{font-size:13px;line-height:1.8;padding:11px 15px;color:#3a4658}
+.bub.u{background:#f4f6f9;border-radius:10px 3px 10px 10px}
+.bub.ai{background:#fff;border:1px solid var(--l);border-radius:3px 10px 10px 10px}
+.flags{display:flex;gap:6px;flex-wrap:wrap}
+.flag{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:5px;background:var(--rs);color:var(--r)}
+
+.mx-list{display:flex;flex-direction:column;gap:7px}
+.mx-row{display:grid;grid-template-columns:104px 1fr;gap:16px;align-items:start;padding:12px 15px;border-radius:9px;background:#fafbfc;border:1px solid var(--l)}
+.mx-row.bad{background:#fffafa;border-color:#f5d5d5}
+.mx-top{display:flex;flex-direction:column;gap:5px}
+.mx-name{font-size:12.5px;font-weight:700}
+.mx-score{font-size:16px;font-weight:800;line-height:1;letter-spacing:-.5px}
+.mx-score.s2{color:var(--g)}.mx-score.s1{color:var(--o)}.mx-score.s0{color:var(--r)}
+.mx-desc{font-size:12.5px;line-height:1.7;color:var(--m)}
+.mx-sum{display:flex;align-items:center;gap:14px;margin-top:16px;padding:14px 18px;border-radius:10px;background:#f7f9fc;border:1px solid var(--l);flex-wrap:wrap}
+.mx-sum .big{font-size:22px;font-weight:800}
+.mx-sum .big small{font-size:12px;color:var(--m2);font-weight:500}
+.mx-rule{font-size:11.5px;color:var(--m2);margin-left:auto}
+
+.ev-list{display:flex;flex-direction:column;gap:10px}
+.ev-card{border:1px solid #d7e3fb;background:#f8fbff;border-radius:10px;padding:15px 17px}
+.ev-head{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}
+.ev-layer{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:#e2ecff;color:var(--b);flex:none}
+.ev-title{font-size:13px;font-weight:700}
+.ev-quote{font-size:12.5px;line-height:1.8;color:#3a4658;padding:11px 13px;background:#fff;border-left:3px solid var(--b);border-radius:0 6px 6px 0}
+.ev-url{font-size:11px;color:var(--m2);margin-top:9px;word-break:break-all;font-family:monospace}
+
+.bcal{display:flex;flex-direction:column;gap:8px}
+.bcai{border:1px solid #f5c8c8;background:#fffafa;border-radius:9px;padding:12px 15px;display:grid;grid-template-columns:24px 1fr;gap:11px}
+.bcic{width:24px;height:24px;border-radius:6px;background:#ffe2e2;color:var(--r);display:grid;place-items:center;font-size:12px;font-weight:800}
+.bct{font-size:12.5px;font-weight:800;color:var(--r);margin-bottom:3px}
+.bcm{font-size:11px;color:var(--m);margin-bottom:7px;padding-bottom:7px;border-bottom:1px dashed #f5d0d0}
+.bcd{font-size:12.5px;line-height:1.75;color:#3a4658}
+.bcd b{color:var(--r)}
+.nobc{padding:16px;background:#f2faf5;border:1px solid #c9efd9;border-radius:10px;color:var(--g);font-size:13px;text-align:center}
+
+.fix-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.fix{border:1px solid #d7e3fb;background:#f8fbff;border-radius:9px;padding:13px 15px}
+.fix-tag{font-size:10px;font-weight:700;color:var(--b);background:#e8f0ff;padding:3px 9px;border-radius:4px;display:inline-block;margin-bottom:8px}
+.fix p{font-size:12.5px;line-height:1.7;color:#42526a;margin:0}
+.nofix{color:var(--m2);font-size:12.5px;font-style:italic}
+.reg-bar{display:flex;align-items:center;gap:13px;padding:13px 17px;border-radius:10px;border:1px solid var(--l);background:#f8fafc;flex-wrap:wrap}
+.reg-badge{font-size:12.5px;font-weight:700;padding:5px 13px;border-radius:6px;flex:none}
+.reg-badge.wait{background:var(--os);color:var(--o)}
+.reg-badge.done{background:var(--gs);color:var(--g)}
+.reg-note{font-size:12px;color:var(--m);line-height:1.6;flex:1;min-width:200px}
+
+.fold{border:1px solid var(--l);border-radius:10px;background:#fafbfc;overflow:hidden}
+.fold summary{padding:13px 17px;font-size:12.5px;font-weight:700;color:var(--m);cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary:before{content:"▸";color:var(--m2);font-size:11px;transition:.2s}
+.fold[open] summary:before{transform:rotate(90deg)}
+.fold[open] summary{border-bottom:1px dashed var(--l)}
+.std-box{padding:15px 17px;font-size:13px;line-height:1.85;color:#3a4658;background:#fff}
+
+.risk-box{padding:16px 20px;border-radius:11px;border:1px solid var(--l);background:#f8fafc}
+.risk-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.risk-badge{font-size:13px;font-weight:700;padding:6px 14px;border-radius:6px}
+.risk-badge.rh{background:var(--rs);color:var(--r)}
+.risk-badge.rm{background:var(--os);color:var(--o)}
+.risk-badge.rl{background:var(--gs);color:var(--g)}
+.risk-note{margin-top:10px;font-size:11.5px;color:var(--m);line-height:1.6;padding-top:10px;border-top:1px dashed var(--l)}
+
+.bcb{max-width:1440px;margin:0 auto;padding:0 24px 24px}
+.bcc{background:#fff;border:1px solid var(--l);border-radius:12px;box-shadow:var(--sh);padding:22px 26px}
+.bch{margin-bottom:20px}
+.bch h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.bch p{font-size:12px;color:var(--m);margin:0}
+.bcg{margin-bottom:20px}
+.bcg:last-child{margin-bottom:0}
+.bcgt{font-size:12px;font-weight:700;color:var(--m);margin-bottom:10px;padding-bottom:6px;border-bottom:1px dashed var(--l);display:flex;align-items:center;gap:8px}
+.dot{width:6px;height:6px;border-radius:50%}
+.dot.red{background:var(--r)}.dot.orange{background:var(--o)}.dot.blue{background:var(--b)}
+.bci{display:grid;grid-template-columns:24px 110px 1fr 120px 40px;gap:12px;align-items:center;padding:8px 0}
+.bcix{font-size:11px;font-weight:700;color:var(--m2)}
+.bcn{font-size:12.5px;font-weight:700}
+.bcd2{font-size:11.5px;color:var(--m);line-height:1.5}
+.bcbw{height:12px;background:#f2f5f9;border-radius:6px;overflow:hidden}
+.bcf{height:100%;border-radius:6px}
+.bcf.red{background:linear-gradient(90deg,#f28b6c,#e04a2f)}
+.bcf.orange{background:linear-gradient(90deg,#f5c26b,#d99620)}
+.bcf.blue{background:linear-gradient(90deg,#7ba7f5,#2f6df6)}
+.bcn2{font-size:12.5px;font-weight:800;text-align:right}
+.empty{padding:60px 20px;text-align:center;color:var(--m2)}
+
+.prod{background:#fff;border:1px solid var(--l);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
+.prod summary{padding:18px 26px;font-size:14px;font-weight:800;cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px}
+.prod summary::-webkit-details-marker{display:none}
+.prod summary:before{content:"▸";color:var(--m2);font-size:12px;transition:.2s}
+.prod[open] summary:before{transform:rotate(90deg)}
+.prod[open] summary{border-bottom:1px solid var(--l)}
+.prod-grid{padding:22px 26px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.prod-item{padding:16px 18px;background:#f8fafd;border:1px solid var(--l);border-radius:10px}
+.prod-item h4{font-size:13px;font-weight:800;margin:0 0 8px;color:var(--t)}
+.prod-item p{font-size:12.5px;line-height:1.8;color:#4a5668;margin:0}
+
+@media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){
+  .wb{grid-template-columns:1fr;padding:12px}
+  .side{position:relative;top:auto;max-height:none}
+  .list{max-height:360px}
+  .sw,.bcb{padding-left:12px;padding-right:12px}
+  .stats{grid-template-columns:repeat(3,1fr);gap:8px}
+  .stat{padding:12px 14px}.sv{font-size:22px}
+  .blk{padding:18px 16px}
+  .verdict{padding:18px 16px;gap:16px}
+  .vd-score{border:0;padding:0;text-align:left}
+  .mx-row{grid-template-columns:84px 1fr;gap:10px}
+  .fix-grid{grid-template-columns:1fr}
+  .bci{grid-template-columns:20px 90px 1fr 70px 36px}
+  .prod-grid{grid-template-columns:1fr}
+  .intro-bar{padding:14px 16px;gap:12px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">AI</div>AI 客服质检裁定台</div>
+  <span class="tag">MVP Demo · 示例数据</span>
+</header>
+
+<div class="sw">
+  <div class="intro-bar">
+    <div class="intro-body">
+      <div class="intro-t">这个工作台是什么</div>
+      <p class="intro-d">一个用于评估电商 AI 客服回答质量的质检工具原型。面向 AI 产品、客服运营、标注团队，帮助快速定位 Badcase、统一评测口径、跟踪优化回归。</p>
+    </div>
+    <span class="intro-tag">作品集 Demo · 10 条示例数据</span>
+  </div>
+  <div class="stats" id="stats"></div>
+</div>
+
+<div class="wb">
+  <aside class="side">
+    <div class="sh"><span class="t">评测用例</span><span class="c" id="lc">—</span></div>
+    <div class="sr-wrap"><input class="sr" id="sr" placeholder="搜索 Case ID 或问题…"/></div>
+    <div class="filters">
+      <select id="fs"><option value="">全部结论</option><option>通过</option><option>需优化</option><option>不通过</option></select>
+      <select id="fr"><option value="">全部风险</option><option>高风险</option><option>中风险</option><option>低风险</option></select>
+    </div>
+    <div class="list" id="list"></div>
+  </aside>
+  <main id="report"></main>
+</div>
+
+<div class="bcb">
+  <div class="bcc">
+    <div class="bch">
+      <h3>Badcase 类型分布</h3>
+      <p>示例数据中的 Badcase 类型统计，按合规 / 体验 / 识别三类分组</p>
+    </div>
+    <div id="bcBody"></div>
+  </div>
+</div>
+
+<div class="bcb">
+  <details class="prod">
+    <summary>产品说明 · 评测标准与迭代方向</summary>
+    <div class="prod-grid">
+      <div class="prod-item">
+        <h4>六项评分指标</h4>
+        <p>分类准确、风险判断、证据引用、边界合规、人工转接、问题解决。每项 0～2 分，总分 12 分。10～12 通过，7～9 需优化，0～6 不通过。六项独立打分，不相互带动。</p>
+      </div>
+      <div class="prod-item">
+        <h4>为什么风险与总分独立</h4>
+        <p>低分不等于高风险，高分也不等于无风险。风险等级反映业务风险程度，总分反映回答质量。高风险 Case 必须重点核查「风险判断」「边界合规」「人工转接」三项。</p>
+      </div>
+      <div class="prod-item">
+        <h4>Badcase 怎么归因</h4>
+        <p>规则错误、虚假承诺、越权承诺、无依据生成、证据不足、人工转接不合理、问题未解决等。一条 Case 可多选，用于定位问题类型和优化方向。</p>
+      </div>
+      <div class="prod-item">
+        <h4>评测依据优先级</h4>
+        <p>京东官方商品／订单页面 ＞ 官方帮助中心 ＞ 售后／价保／物流等业务页面 ＞ 平台规则 ＞ 其他官方公开信息。不得以其他平台规则替代。</p>
+      </div>
+      <div class="prod-item">
+        <h4>关键评测原则</h4>
+        <p>证据不足 ≠ 无依据生成：缺少 SKU／订单等必要信息只标「证据不足」；仅当官方公开信息能证明结论错误时才标「无依据生成」。出现“以页面为准”不自动得 2 分。</p>
+      </div>
+      <div class="prod-item">
+        <h4>后续迭代方向</h4>
+        <p>接入真实评测集、自动评分、证据反查 Case、回归看板、多角色协作、评分修改后自动重算总分与结论。</p>
+      </div>
+    </div>
+  </details>
+</div>
+
+<script>
+const M = ['分类准确','风险判断','证据引用','边界合规','人工转接','问题解决'];
+
+const CASES = [
+{
+  id:'DEMO-01', scene:'商品咨询／商品规格',
+  q:'这个电饭煲有几升？适合几个人用？',
+  a:'这款电饭煲容量为4L，比较适合3～5人家庭使用，具体参数可以以商品详情页展示的信息为准。',
+  std:'商品容量和适用人数以商品详情页“规格与参数”展示为准。请您提供商品链接或SKU，我帮您核对具体规格；也可在商品详情页“规格参数”栏自行查看。未获取具体商品前，请勿直接断言容量与适用人数。',
+  metrics:{
+    '分类准确':[2,'准确识别为电饭煲容量及适用人数咨询。'],
+    '风险判断':[1,'无SKU即杜撰“4L、3～5人”，可能误导用户选购。'],
+    '证据引用':[0,'无SKU却给出确定数字，无官方依据可核验该具体商品容量。'],
+    '边界合规':[1,'在缺少商品信息时直接给出确定描述，超出可核验范围，但未形成重大业务承诺。'],
+    '人工转接':[2,'普通商品规格查询，无需人工介入。'],
+    '问题解决':[1,'给了“以详情页为准”的方向，但用户仍需自行核实。']
+  },
+  risk:'中风险', reg:'待回归',
+  evidence:[{layer:'商品层', title:'商品详情页“规格参数”栏', quote:'商品具体规格／参数以商品详情页展示为准。当前 Case 无 SKU，属“需页面核验”项，无帮助中心原文可替代具体商品参数。', url:'—'}],
+  badcase:[
+    {t:'证据不足', m:'缺少商品/SKU/订单等必要信息，结论无法核验。', d:'无 SKU 却直接给出“4L、3～5人”的确定规格。'},
+    {t:'无依据生成', m:'无官方依据/无实时数据/无用户提供信息时生成确定性结论。', d:'在缺少商品信息时凭空生成具体容量与适用人数。'}
+  ],
+  core:'无 SKU 却直接给出“4L、适合3～5人”确定规格，后句“以详情页为准”与之冲突。',
+  opt:[
+    ['知识库补充','商品规格回答必须绑定具体商品/SKU或商品详情页信息。'],
+    ['Prompt优化','缺少具体商品信息时不要直接断言容量和适用人数，应先要求用户提供商品链接、SKU或引导查看商品详情页规格参数栏。']
+  ]
+},
+{
+  id:'DEMO-02', scene:'物流配送／预售发货',
+  q:'这个商品页面写着预售，我已经付款了，能要求商家48小时内一定发货吗？',
+  a:'预售商品一般会在48小时内发货，如果超过48小时，可以联系商家或客服处理。',
+  std:'预售/预定商品的发货时间以商品详情页标注的“预计发货时间”或您与商家的约定为准，并非统一48小时。建议先在订单详情/商品页查看预计发货时间；若超过该时间，可自助催单或联系客服。',
+  metrics:{
+    '分类准确':[2,'准确识别为预售商品发货时效咨询。'],
+    '风险判断':[0,'错误承诺预售 48h 发货，误导发货预期。'],
+    '证据引用':[0,'把现货 48h 错套到预售，所引依据不支持预售 48h 结论。'],
+    '边界合规':[0,'越权承诺发货时效。'],
+    '人工转接':[1,'应引导看详情页 + 超期催单，仅部分引导。'],
+    '问题解决':[0,'结论错误，用户按此判断发货时间会被误导。']
+  },
+  risk:'中风险', reg:'待回归',
+  evidence:[{layer:'规则层', title:'第三方商家发货时效说明', quote:'预售、预定类商品以商品详情页展示的预计发货时间为准；现货第三方 48h 更新物流。', url:'—'}],
+  badcase:[
+    {t:'规则错误', m:'结论与京东官方规则不一致或直接冲突。', d:'把<b>现货 48h 规则错套到预售商品</b>上，官方明确预售/预定以商品详情页预计发货时间为准。'},
+    {t:'虚假承诺', m:'作出“一定、保证、必然”等无法兑现的保证。', d:'AI 称“<b>预售一般 48 小时内发货</b>”，用户按此预期往往无法兑现。'}
+  ],
+  core:'把第三方现货 48 小时时效错套到预售商品上，且遗漏超期后的催单/纠纷路径。',
+  opt:[
+    ['知识库补充','区分预售、预定、现货等发货时效规则，48h 仅适用第三方现货。'],
+    ['Prompt优化','禁止统一使用“48小时发货”，先引导查看商品详情页/订单页预计发货时间，超期后引导催单或联系客服。']
+  ]
+},
+{
+  id:'DEMO-03', scene:'账号、支付与人工服务／异常订单',
+  q:'我发现账号里有一个陌生订单，改完登录密码后，这个订单会自动失效吗？',
+  a:'一般会，修改密码后陌生订单通常会自动失效，您不用再联系平台处理。',
+  std:'修改登录密码不能使陌生订单自动失效。建议您：1. 立即修改登录密码，并提升账户安全级别。2. 核对该陌生订单的商品、收货地址、支付方式和资金去向。3. 若确认非本人操作或已有资金损失，立即联系客服核实并提交被盗申报。',
+  metrics:{
+    '分类准确':[2,'准确识别为账号异常和陌生订单处理问题。'],
+    '风险判断':[0,'严重低估账号和交易安全风险。'],
+    '证据引用':[0,'官方无“修改密码使陌生订单自动失效”表述。'],
+    '边界合规':[0,'“通常会自动失效”“不用联系平台”为无依据结论。'],
+    '人工转接':[0,'账号异常本应引导人工/被盗申报，反让用户不要联系。'],
+    '问题解决':[0,'未给出正确的账号安全和被盗申报路径。']
+  },
+  risk:'高风险', reg:'待回归',
+  evidence:[{layer:'流程层', title:'京东账号安全帮助中心', quote:'账号异常可重置密码、提升安全等级；被盗/异常登录可锁定账户并通过被盗申报报案。官方无“修改密码使陌生订单自动失效”表述。', url:'—'}],
+  badcase:[
+    {t:'风险识别不足', m:'未识别或低估问题中的业务风险。', d:'AI <b>严重低估账号被盗 / 资金风险</b>，未识别这是高风险账号安全场景。'},
+    {t:'虚假承诺', m:'作出“一定、保证、必然”等无法兑现的保证。', d:'AI 称“<b>修改密码后陌生订单通常会自动失效</b>”，官方无此保证。'},
+    {t:'人工转接不合理', m:'该转未转、不该转却转，或人工路径不清。', d:'账号异常 <b>本应引导人工 / 被盗申报</b>，AI 反而说“不用再联系平台”。'},
+    {t:'问题未解决', m:'用户无法据回答继续完成目标。', d:'用户按 AI 建议仅改密码，<b>资金损失风险无法解除</b>。'}
+  ],
+  core:'AI 称“改密码后陌生订单会自动失效、不用联系平台”，与官方安全流程冲突。',
+  opt:[
+    ['风险控制','改密码 + 提升安全等级（支付密码 / 数字证书）。'],
+    ['账号锁定','确认被盗 / 异常登录时通过“账号锁定管理”临时锁定。'],
+    ['人工转接','核对陌生订单及账单，非本人操作立即联系客服并提交被盗申报。'],
+    ['Prompt优化','禁止告知用户“不用联系平台”。']
+  ]
+},
+{
+  id:'DEMO-04', scene:'账号、支付与人工服务／直接转人工',
+  q:'我已经跟机器人说半天了，我不要再聊了，直接给我人工客服。',
+  a:'好的，您可以点击页面中的“人工客服”入口进入人工服务。如果当前人工客服繁忙，请稍后再试。',
+  std:'好的，您可以点击页面中的“人工客服”入口进入人工服务。如果当前人工客服繁忙，请稍后再试。',
+  metrics:{
+    '分类准确':[2,'准确识别为用户明确要求停止机器人对话并直接进入人工客服。'],
+    '风险判断':[2,'属于客服服务渠道切换请求，无明显交易、支付或账号风险。'],
+    '证据引用':[2,'官方客服页面明确提供人工客服入口，并有服务时间说明。'],
+    '边界合规':[2,'没有承诺人工客服一定立即接通，仅说明繁忙时稍后再试。'],
+    '人工转接':[2,'用户明确要求人工，直接提供入口完全符合需求。'],
+    '问题解决':[2,'明确告诉用户点击人工客服入口，并提示繁忙时稍后重试。']
+  },
+  risk:'低风险', reg:'已通过',
+  evidence:[{layer:'流程层', title:'京东官方客服页面', quote:'京东商城提供在线客服入口，并提供客服热线及服务时间。', url:'—'}],
+  badcase:[],
+  core:'用户明确要求人工，AI 直接提供人工客服入口并说明繁忙时的处理，回答合规。',
+  opt:[]
+},
+{
+  id:'DEMO-05', scene:'价格与优惠／支付优惠后价保',
+  q:'我买东西时用了支付优惠，后来商品又降价了，只要还在价保期内就一定能补差吗？',
+  a:'一般可以，只要还在价保期内，商品发生降价就可以在“我的订单-订单详情-安心保障-价格保护”入口申请补差，具体以页面显示为准。',
+  std:'价保期内降价不一定都能补差。若降价由支付优惠（支付券、白条券、白条支付立减等）或返现优惠导致，不支持价格保护。建议在价保入口查看该订单是否符合条件及可补差金额，以页面显示为准。',
+  metrics:{
+    '分类准确':[2,'准确识别为使用支付优惠后的价格保护咨询。'],
+    '风险判断':[0,'未识别支付优惠直接排除价保资格这一关键条件，错误承诺补差。'],
+    '证据引用':[0,'官方价保规则明确支付优惠差价不支持价保，AI 结论无依据。'],
+    '边界合规':[1,'使用“只要在价保期就可以补差”的绝对化表述，但结尾以页面为准，未形成完整越权承诺。'],
+    '人工转接':[2,'价保可在入口自助核验，无需立即转人工。'],
+    '问题解决':[2,'给出了查看价保入口的路径，用户可继续核验。']
+  },
+  risk:'中风险', reg:'待回归',
+  evidence:[{layer:'规则层', title:'什么是价格保护服务？', quote:'因支付优惠（包括但不限于支付券、白条券、白条支付立减等）与返现优惠产生的差价，不支持价格保护。', url:'—'}],
+  badcase:[
+    {t:'规则错误', m:'结论与京东官方规则不一致或直接冲突。', d:'AI 称“<b>只要在价保期内商品降价就可以申请补差</b>”，与官方“支付优惠差价不支持价保”冲突。'},
+    {t:'虚假承诺', m:'作出“一定、保证、必然”等无法兑现的保证。', d:'AI 用“<b>只要…就…</b>”绝对化表述承诺可补差，用户实际申请会被拒。'}
+  ],
+  core:'未识别支付优惠排除价保资格这一关键条件，错误承诺可补差。',
+  opt:[
+    ['知识库补充','维护支付优惠、返现优惠等不支持价保的情形清单。'],
+    ['Prompt优化','先核验降价原因、订单状态及价保入口页面，再判断能否补差，不使用“只要…就…”绝对化表述。']
+  ]
+},
+{
+  id:'DEMO-06', scene:'营销与活动／满减活动',
+  q:'活动页面写着“满300减50”，我买了两件各160元的商品，结算时一定能减50元吗？',
+  a:'两件商品合计320元，但是否可以使用这项满减，还要看两件商品是否都在活动范围内、活动是否支持合并计算，最终以结算页实际优惠为准。',
+  std:'两件合计320元虽满300元门槛，但能否减50元取决于：①两件商品是否都在该活动范围内；②活动是否支持合并计算门槛；③是否与其他优惠互斥。最终减免以订单结算页实际显示的优惠金额为准。',
+  metrics:{
+    '分类准确':[2,'准确识别为满减活动规则咨询。'],
+    '风险判断':[2,'属于优惠权益问题，不涉及资金异常或高风险争议。'],
+    '证据引用':[1,'方向正确，但未贴具体活动规则，仅说明“以结算页为准”。'],
+    '边界合规':[2,'未臆造活动资格，以结算页为准，边界合规。'],
+    '人工转接':[2,'优惠可在结算页自助确认，无需人工。'],
+    '问题解决':[2,'给出需看活动范围和结算页的正确方向。']
+  },
+  risk:'中风险', reg:'已通过',
+  evidence:[{layer:'规则层', title:'京东官方促销规则', quote:'因各类促销优惠适用条件不同，最终结算金额以结算页面展示的金额为准。', url:'—'}],
+  badcase:[],
+  core:'回答合规，明确指出满减是否生效需看活动范围与结算页，未做绝对化承诺。',
+  opt:[]
+},
+{
+  id:'DEMO-07', scene:'退货、换货与售后／包装拆开',
+  q:'我把商品包装拆开了，现在还能七天无理由退货吗？',
+  a:'只要商品已经拆过包装，就不能享受七天无理由退货。',
+  std:'仅拆开外包装不影响七天无理由退货：出于查验、确认品质功能而拆包或合理调试，且商品本身、配件、吊牌、说明书齐全、保持完好的，仍可在7天内申请；只有超出查验需要使用商品并造成较大价值贬损，才会被认定为商品不完好。',
+  metrics:{
+    '分类准确':[2,'正确识别为拆包装后是否还能七天无理由退货的问题。'],
+    '风险判断':[0,'错误剥夺用户合法退货权，高风险。'],
+    '证据引用':[0,'官方“商品完好”原文直接否定 AI 结论。'],
+    '边界合规':[0,'以拆包装为由拒绝退货，越权。'],
+    '人工转接':[1,'引导查看商品规则，部分引导。'],
+    '问题解决':[0,'结论错误，剥夺用户退货资格。']
+  },
+  risk:'高风险', reg:'待回归',
+  evidence:[{layer:'规则层', title:'7天无理由退货规则说明', quote:'消费者基于查验需要而打开商品包装……不影响商品的完好。对超出查验……使用商品，导致商品价值贬损较大的，视为商品不完好。', url:'—'}],
+  badcase:[
+    {t:'规则错误', m:'结论与京东官方规则不一致或直接冲突。', d:'AI 称“<b>拆过包装就不能退</b>”，与官方“商品完好”标准冲突——基于查验拆包不影响完好，仍可退。'},
+    {t:'问题未解决', m:'用户无法据回答继续完成目标。', d:'AI 直接<b>剥夺用户退货资格</b>，用户被误导放弃合法申请。'}
+  ],
+  core:'AI 把“拆过包装”简单等同于“不能退”，与官方“基于查验拆包不影响商品完好”规则冲突。',
+  opt:[
+    ['知识库补充','加入“商品完好”判定标准（基于查验拆包不影响完好；超出查验使用致价值贬损才算不完好）。'],
+    ['Prompt优化','不能只根据是否拆包装判断，应进一步确认拆封目的、使用程度和商品完好情况，引导查看具体商品规则。']
+  ]
+},
+{
+  id:'DEMO-08', scene:'退款、投诉与纠纷／退款时效',
+  q:'退款提交以后，24小时之内一定能到账吗？',
+  a:'退款一般会在24小时内到账，如果超过24小时还没有到账，您可以联系京东客服处理。',
+  std:'退款无法保证24小时内到账。京东退款处理一般1个工作日，银行处理周期储蓄卡1-7个工作日、信用卡1-15个工作日，具体受银行/支付机构影响。建议在订单退款详情查看状态和预计到账时间；超过页面显示的正常处理周期仍未到账，再联系客服核实。',
+  metrics:{
+    '分类准确':[2,'准确识别为退款到账时效咨询。'],
+    '风险判断':[0,'错误设定 24 小时一般时限，高风险。'],
+    '证据引用':[0,'官方退款周期表无 24h 一般时限。'],
+    '边界合规':[0,'未经条件限定的时效承诺。'],
+    '人工转接':[1,'超期联系客服方向可，但触发点应为超过对应支付方式正常周期而非 24 小时。'],
+    '问题解决':[1,'给了联系客服路径但触发时机错误。']
+  },
+  risk:'高风险', reg:'待回归',
+  evidence:[{layer:'规则层', title:'京东退款说明', quote:'储蓄卡京东处理 1 工作日 + 银行 1-7 工作日；信用卡 1 + 1-15 工作日；退款周期仅供参考，具体可能受银行、支付机构影响。', url:'—'}],
+  badcase:[
+    {t:'规则错误', m:'结论与京东官方规则不一致或直接冲突。', d:'AI 把退款到账统一表述为“<b>24 小时内</b>”，与官方按支付方式区分的退款周期冲突。'},
+    {t:'虚假承诺', m:'作出“一定、保证、必然”等无法兑现的保证。', d:'AI 用“<b>一般会在 24 小时内到账</b>”作为普遍时效承诺。'},
+    {t:'人工转接不合理', m:'该转未转、不该转却转，或人工路径不清。', d:'把错误的“24 小时”当成人工触发条件，导致用户在不该联系客服时被引导联系。'},
+    {t:'问题未解决', m:'用户无法据回答继续完成目标。', d:'用户按错误时效预期等待，超过 24 小时未到账时才联系客服，<b>延误核实时机</b>。'}
+  ],
+  core:'把退款到账统一表述为 24 小时，忽略不同支付方式的实际退款周期。',
+  opt:[
+    ['知识库补充','按支付方式维护退款时效（储蓄卡、信用卡、白条、余额等）。'],
+    ['规则约束','禁止统一承诺“24小时到账”。'],
+    ['人工转接','超过对应官方/页面处理时限或状态异常时再人工核验。']
+  ]
+},
+{
+  id:'DEMO-09', scene:'营销与活动／新人礼包',
+  q:'我之前已经在京东下过一次单，现在重新注册一个账号，还能领取新人礼包吗？',
+  a:'可以，只要重新注册一个新账号，就一定可以领取新人礼包；如果没有到账，再刷新一下页面即可。',
+  std:'新人礼包仅限从未在京东下过单的新用户，每个用户（同一账号/身份证/手机号/银行卡/终端设备均视为同一用户）仅限领取一次。您此前已有下单记录，即使重新注册账号也不符合新人资格，无法领取新人礼包；若页面显示异常，可联系京东客服核实。',
+  metrics:{
+    '分类准确':[2,'准确识别为新人活动资格咨询。'],
+    '风险判断':[0,'错误承诺换号可领新人礼包，误导换号/刷单，中风险。'],
+    '证据引用':[0,'官方同一用户判定规则直接否定 AI 结论。'],
+    '边界合规':[0,'违规承诺重新注册即可领取。'],
+    '人工转接':[1,'应引导联系客服核实而非“刷新”，部分引导。'],
+    '问题解决':[0,'结论错误，用户按此操作无法领取。']
+  },
+  risk:'中风险', reg:'待回归',
+  evidence:[{layer:'规则层', title:'新人 188 大礼包活动规则', quote:'新人礼包仅限从未在京东下过单的新用户领取，每个用户仅限领取 1 次；同一账号/身份证/手机/银行卡/设备视为同一用户。', url:'—'}],
+  badcase:[
+    {t:'规则错误', m:'结论与京东官方规则不一致或直接冲突。', d:'AI 称“<b>重新注册新账号就一定可以领取</b>”，与官方“同一用户仅限 1 次”规则冲突。'},
+    {t:'虚假承诺', m:'作出“一定、保证、必然”等无法兑现的保证。', d:'AI 使用“<b>就一定可以领取</b>”绝对化承诺。'}
+  ],
+  core:'AI 称换账号就一定可以领取新人礼包，与官方“同一用户仅限 1 次”规则冲突。',
+  opt:[
+    ['知识库补充','固化新人礼包资格判定（从未下单 + 同一用户多维度识别 + 每用户仅 1 次）。'],
+    ['Prompt优化','不得仅依据重新注册账号判断新用户，应根据官方活动规则和历史下单情况判断，不满足条件时不承诺领取。']
+  ]
+},
+{
+  id:'DEMO-10', scene:'物流配送／物流损坏',
+  q:'快递送到的时候包装都破了，我应该怎么办？',
+  a:'建议您先保留商品和外包装，并及时通过订单售后渠道反馈情况，并按页面提示提供照片等相关凭证。',
+  std:'外包装破损建议先保留商品及原包装，于签收后 24 小时内通过订单售后提交“到货物流损”申请，并按页面提示提供实物照片/快递证明等凭证；经核查属实，7 天内可退换货，且该情形免收返回运费。',
+  metrics:{
+    '分类准确':[2,'准确识别为配送中包装破损后的处理问题。'],
+    '风险判断':[2,'正确识别物流损需售后核实，要求保留商品和包装并提交凭证。'],
+    '证据引用':[2,'官方售后政策依据充分。'],
+    '边界合规':[1,'未提 24 小时反馈时限、未区分自营/第三方运费承担。'],
+    '人工转接':[2,'引导订单售后反馈，路径合理。'],
+    '问题解决':[2,'给出保留包装 + 售后反馈 + 提供凭证的正确方向。']
+  },
+  risk:'中风险', reg:'已通过',
+  evidence:[{layer:'规则层', title:'京东自营商品售后政策服务总则', quote:'到货物流损于收到货后 24 小时内反馈，经核查属实 7 天内退换、免收返回运费。', url:'—'}],
+  badcase:[],
+  core:'回答方向正确，但未提 24 小时反馈时限，也未区分自营与第三方的运费承担差异。',
+  opt:[
+    ['知识库补充','补充 24 小时反馈时限及自营/第三方运费承担区分。'],
+    ['Prompt优化','处理物流损坏类问题时同步给出反馈时限与运费承担说明。']
+  ]
+}
+];
+
+const BC_GROUPS = [
+  {title:'合规问题', cls:'red', desc:'影响用户权益，需优先修复',
+   items:['规则错误','虚假承诺','越权承诺','无依据生成']},
+  {title:'体验问题', cls:'orange', desc:'影响用户能否顺利完成目标',
+   items:['问题未解决','人工转接不合理','信息遗漏']},
+  {title:'识别问题', cls:'blue', desc:'影响对用户诉求和风险的判断',
+   items:['风险识别不足','证据不足','分类错误']}
+];
+const BC_DEF = {
+  '规则错误':'结论与官方规则不一致或直接冲突。',
+  '虚假承诺':'作出“一定、保证、必然”等无法兑现的保证。',
+  '越权承诺':'超出客服权限，擅自承诺赔偿/退款/处理结果。',
+  '无依据生成':'无官方依据/无实时数据/无用户提供信息时生成确定性结论。',
+  '问题未解决':'用户无法据回答继续完成目标。',
+  '人工转接不合理':'该转未转、不该转却转，或人工路径不清。',
+  '信息遗漏':'遗漏关键条件、步骤、时效或操作路径。',
+  '风险识别不足':'未识别或低估问题中的业务风险。',
+  '证据不足':'缺少必要信息，结论无法核验。',
+  '分类错误':'误解用户意图或判错业务场景。'
+};
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escKeepB = s => esc(s).replace(/&lt;b&gt;/g,'<b>').replace(/&lt;\/b&gt;/g,'</b>');
+
+const scoreOf = c => M.reduce((s,k)=>s+(c.metrics[k]?c.metrics[k][0]:0),0);
+const conclOf = s => s>=10?'通过':s>=7?'需优化':'不通过';
+const riskCls = r => r==='高风险'?'rh':r==='中风险'?'rm':'rl';
+const conclCls = v => v==='通过'?'pass':v==='需优化'?'opt':'fail';
+const scoreCls = v => v===2?'s2':v===1?'s1':'s0';
+const numCls = cn => cn==='通过'?'g':cn==='需优化'?'o':'r';
+
+function renderStats(){
+  let pass=0,opt=0,fail=0,high=0,sum=0;
+  CASES.forEach(c=>{
+    const s=scoreOf(c); sum+=s;
+    const cn=conclOf(s);
+    if(cn==='通过')pass++; else if(cn==='需优化')opt++; else fail++;
+    if(c.risk==='高风险')high++;
+  });
+  const avg=(sum/CASES.length).toFixed(1);
+  const arr=[
+    {v:CASES.length,l:'评测用例',c:'b'},
+    {v:pass,l:'通过',c:'g'},
+    {v:opt,l:'需优化',c:'o'},
+    {v:fail,l:'不通过',c:'r'},
+    {v:avg,l:'平均分',c:'',mx:'/12'},
+    {v:high,l:'高风险',c:'r'}
+  ];
+  $('#stats').innerHTML=arr.map(x=>
+    `<div class="stat"><div class="sv ${x.c}">${x.v}${x.mx?'<span class="mx">'+x.mx+'</span>':''}</div><div class="sl">${x.l}</div></div>`
+  ).join('');
+}
+
+let cid = CASES[0].id;
+function renderList(){
+  const kw=($('#sr').value||'').toLowerCase();
+  const fs=$('#fs').value, fr=$('#fr').value;
+  const arr=CASES.filter(c=>{
+    const hit=!kw||c.id.toLowerCase().includes(kw)||c.q.toLowerCase().includes(kw);
+    return hit && (!fs||conclOf(scoreOf(c))===fs) && (!fr||c.risk===fr);
+  });
+  $('#lc').textContent=arr.length+' 条';
+  if(!arr.length){$('#list').innerHTML='<div class="empty">没有匹配的用例</div>';return;}
+  $('#list').innerHTML=arr.map(c=>{
+    const s=scoreOf(c), cn=conclOf(s);
+    return `<button class="item ${c.id===cid?'active':''}" data-id="${c.id}">
+      <div class="it"><span class="iid">${c.id}</span><span class="isc">${s}/12</span></div>
+      <div class="iq">${esc(c.q)}</div>
+      <div class="itags"><span class="bdg ${conclCls(cn)}">${cn}</span><span class="bdg ${riskCls(c.risk)}">${c.risk}</span></div>
+    </button>`;
+  }).join('');
+  $$('.item').forEach(el=>el.onclick=()=>{cid=el.dataset.id;renderList();renderReport();});
+}
+
+function renderReport(){
+  const c=CASES.find(x=>x.id===cid); if(!c)return;
+  const s=scoreOf(c), cn=conclOf(s);
+  const hasBad=c.badcase.length>0;
+
+  $('#report').innerHTML=`
+  <div class="report">
+    <div class="verdict">
+      <div class="vd-main">
+        <div class="vd-r1">
+          <span class="vd-id">${c.id}</span>
+          <span class="bdg ${conclCls(cn)}" style="font-size:11px;padding:4px 10px">${cn}</span>
+          <span class="bdg ${riskCls(c.risk)}" style="font-size:11px;padding:4px 10px">${c.risk}</span>
+        </div>
+        <div class="vd-cat">${esc(c.scene)}</div>
+        <div class="vd-line ${hasBad?'':'ok'}"><b>核心问题</b>　${esc(c.core)}</div>
+      </div>
+      <div class="vd-score">
+        <div class="vd-num ${numCls(cn)}">${s}<small>/12</small></div>
+        <div class="vd-lab">综合得分</div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h">
+        <span class="blk-t">待检对话</span>
+        <span class="blk-sub">用户提问与 AI 客服实际回答</span>
+      </div>
+      <div class="chat">
+        <div class="turn">
+          <div class="av u">用</div>
+          <div class="turn-body"><div class="bub u">${esc(c.q)}</div></div>
+        </div>
+        <div class="turn">
+          <div class="av ai">AI</div>
+          <div class="turn-body">
+            <div class="bub ai">${esc(c.a)}</div>
+            ${hasBad?`<div class="flags">${c.badcase.map(b=>`<span class="flag">${esc(b.t)}</span>`).join('')}</div>`:''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h">
+        <span class="blk-t">风险</span>
+        <span class="blk-sub">风险等级独立于总分</span>
+      </div>
+      <div class="risk-box">
+        <div class="risk-row">
+          <span class="risk-badge ${riskCls(c.risk)}">${c.risk}</span>
+          <span style="font-size:12.5px;color:var(--m)">
+            ${hasBad?'涉及：'+c.badcase.map(b=>b.t).join('、'):'无明确 Badcase'}
+          </span>
+        </div>
+        <div class="risk-note">
+          风险等级与总分相互独立——低分不等于高风险，高分也不等于无风险。
+          ${c.risk==='高风险'?'本 Case 涉及高风险，须重点核查「风险判断」「边界合规」「人工转接」三项。':''}
+        </div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h">
+        <span class="blk-t">判定依据</span>
+        <span class="blk-sub">官方规则 / 流程，四层证据来源</span>
+      </div>
+      <div class="ev-list">
+        ${c.evidence.map(x=>`
+          <div class="ev-card">
+            <div class="ev-head">
+              <span class="ev-layer">${esc(x.layer)}</span>
+              <span class="ev-title">${esc(x.title)}</span>
+            </div>
+            <div class="ev-quote">${esc(x.quote)}</div>
+            ${x.url&&x.url!=='—'?`<div class="ev-url">来源：${esc(x.url)}</div>`:''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h">
+        <span class="blk-t">六项判定</span>
+        <span class="blk-sub">每项 0～2 分，独立打分，不相互带动</span>
+      </div>
+      <div class="mx-list">
+        ${M.map(k=>{
+          const [v,r]=c.metrics[k];
+          return `<div class="mx-row ${v<2?'bad':''}">
+            <div class="mx-top">
+              <span class="mx-name">${k}</span>
+              <span class="mx-score ${scoreCls(v)}">${v}<span style="font-size:10px;color:var(--m2);font-weight:500">/2</span></span>
+            </div>
+            <div class="mx-desc">${esc(r)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="mx-sum">
+        <span class="big">${s}<small> / 12</small></span>
+        <span class="bdg ${conclCls(cn)}" style="font-size:12px;padding:5px 12px">${cn}</span>
+        <span class="mx-rule">10-12 通过 · 7-9 需优化 · 0-6 不通过　｜　风险等级独立于总分</span>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h">
+        <span class="blk-t">问题定位</span>
+        <span class="blk-sub">Badcase 归因，可多选</span>
+      </div>
+      ${hasBad?`<div class="bcal">
+        ${c.badcase.map(x=>`
+          <div class="bcai">
+            <div class="bcic">!</div>
+            <div>
+              <div class="bct">${esc(x.t)}</div>
+              <div class="bcm">定义：${esc(x.m)}</div>
+              <div class="bcd">本 Case 表现：${escKeepB(x.d)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>`:'<div class="nobc">✓ 该 Case 回答合规，无 Badcase 归因</div>'}
+    </div>
+
+    <div class="blk">
+      <div class="blk-h">
+        <span class="blk-t">处置</span>
+        <span class="blk-sub">优化动作与回归状态</span>
+      </div>
+      ${c.opt.length?`<div class="fix-grid">
+        ${c.opt.map(o=>`<div class="fix"><span class="fix-tag">${esc(o[0])}</span><p>${esc(o[1])}</p></div>`).join('')}
+      </div>`:'<div class="nofix" style="margin-bottom:16px">该 Case 未标记优化建议。</div>'}
+      <div class="reg-bar">
+        <span class="reg-badge ${c.reg==='已通过'?'done':'wait'}">${c.reg}</span>
+        <span class="reg-note">
+          ${c.reg==='已通过'?'该 Case 回答合规，无需回归。':'已按优化建议调整，待重新跑测验证；回归通过后状态更新为“已通过”。'}
+        </span>
+      </div>
+    </div>
+
+    <div class="blk" style="background:#fafbfc">
+      <details class="fold">
+        <summary>参考答案对照 · 合规回答的标准表述</summary>
+        <div class="std-box">${esc(c.std)}</div>
+      </details>
+    </div>
+  </div>`;
+}
+
+function renderBadcase(){
+  const count = {};
+  CASES.forEach(c=>c.badcase.forEach(b=>{ count[b.t]=(count[b.t]||0)+1; }));
+
+  $('#bcBody').innerHTML = BC_GROUPS.map(g=>{
+    const max = Math.max(...g.items.map(n=>count[n]||0), 1);
+    return `<div class="bcg">
+      <div class="bcgt"><span class="dot ${g.cls}"></span>${g.title} · <span style="font-weight:400;color:var(--m2)">${g.desc}</span></div>
+      ${g.items.map((name,i)=>{
+        const n = count[name]||0;
+        return `<div class="bci">
+          <div class="bcix">${String(i+1).padStart(2,'0')}</div>
+          <div class="bcn">${name}</div>
+          <div class="bcd2">${BC_DEF[name]||''}</div>
+          <div class="bcbw"><div class="bcf ${g.cls}" style="width:${n/max*100}%"></div></div>
+          <div class="bcn2">${n}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+renderStats();
+renderList();
+renderReport();
+renderBadcase();
+$('#sr').oninput = renderList;
+$('#fs').onchange = renderList;
+$('#fr').onchange = renderList;
+</script>
+</body>
+</html>
