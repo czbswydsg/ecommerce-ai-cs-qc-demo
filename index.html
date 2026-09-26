@@ -22,14 +22,11 @@ header{height:56px;background:#fff;border-bottom:1px solid var(--l);display:flex
 .logo{width:28px;height:28px;border-radius:7px;background:#1a2332;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
 .tag{font-size:11px;padding:4px 9px;border-radius:6px;background:var(--bs);color:var(--b);font-weight:600}
 
-/* 顶部介绍 */
 .sw{padding:18px 24px 6px;max-width:1440px;margin:0 auto}
 .intro-bar{background:#fff;border:1px solid var(--l);border-radius:12px;box-shadow:var(--sh);padding:18px 22px;margin-bottom:14px;display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap}
 .intro-body{flex:1;min-width:260px}
 .intro-t{font-size:14px;font-weight:800;margin:0 0 5px;letter-spacing:-.1px}
-.intro-d{font-size:12.5px;line-height:1.75;color:var(--m);margin:0}
-.intro-note{font-size:11px;line-height:1.7;color:var(--m2);margin:9px 0 0;padding-top:9px;border-top:1px dashed var(--l)}
-.intro-note b{color:var(--m);font-weight:700}
+.intro-d{font-size:12.5px;line-height:1.8;color:var(--m);margin:0}
 .intro-tag{font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:6px;background:var(--bs);color:var(--b);flex:none;white-space:nowrap}
 
 .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
@@ -191,12 +188,16 @@ header{height:56px;background:#fff;border-bottom:1px solid var(--l);display:flex
 .prod-item h4{font-size:13px;font-weight:800;margin:0 0 8px;color:var(--t)}
 .prod-item p{font-size:12.5px;line-height:1.8;color:#4a5668;margin:0}
 
+/* 产品边界（页面最底部） */
+.boundary{max-width:1440px;margin:0 auto;padding:0 24px 40px}
+.boundary-box{background:#fff;border:1px solid var(--l);border-radius:12px;padding:16px 22px;font-size:12px;line-height:1.8;color:var(--m2)}
+
 @media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:900px){
   .wb{grid-template-columns:1fr;padding:12px}
   .side{position:relative;top:auto;max-height:none}
   .list{max-height:360px}
-  .sw,.bcb{padding-left:12px;padding-right:12px}
+  .sw,.bcb,.boundary{padding-left:12px;padding-right:12px}
   .stats{grid-template-columns:repeat(3,1fr);gap:8px}
   .stat{padding:12px 14px}.sv{font-size:22px}
   .blk{padding:18px 16px}
@@ -217,17 +218,12 @@ header{height:56px;background:#fff;border-bottom:1px solid var(--l);display:flex
 </header>
 
 <div class="sw">
-  <div class="intro-bar">
-    <div class="intro-body">
-      <div class="intro-t">这个质检台是什么</div>
-      <p class="intro-d">一个面向电商 AI 客服场景的质量评测与持续优化工作台，覆盖 Evaluation Set → Ground Truth → 质检评分 → 风险识别 → Badcase 归因 → 优化 → 回归验证的完整链路。</p>
-      <p class="intro-note">
-        <b>项目定位</b>　不是传统的 AI 客服聊天机器人 Demo，而是围绕「评测—质检—优化—验证」建立的产品原型。<br>
-        <b>产品边界</b>　不接真实订单/物流/CRM API，不使用真实企业客服数据，不宣称 LLM/RAG 已上线，不把模拟 Eval Set 当生产数据。
-      </p>
-    </div>
-    <span class="intro-tag">作品集 Demo · 10 条示例数据 · 模拟数据</span>
+<div class="intro-bar">
+  <div class="intro-body">
+    <p class="intro-d">一个面向电商 AI 客服场景的质量评测与持续优化工作台，重点解决 AI 客服回答中的“错在哪里、为什么错、风险多大、依据是什么、怎么修、修完是否有效”等问题。</p>
   </div>
+  <span class="intro-tag">作品集 Demo · 10 条示例数据 · 模拟数据</span>
+</div>
   <div class="stats" id="stats"></div>
 </div>
 
@@ -284,6 +280,12 @@ header{height:56px;background:#fff;border-bottom:1px solid var(--l);display:flex
       </div>
     </div>
   </details>
+</div>
+
+<div class="boundary">
+  <div class="boundary-box">
+    产品边界：不接真实订单/物流/CRM API，不使用真实企业客服数据，不宣称 LLM/RAG 已上线，不把模拟 Eval Set 当生产数据。
+  </div>
 </div>
 
 <script>
