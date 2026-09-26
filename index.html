@@ -28,6 +28,8 @@ header{height:56px;background:#fff;border-bottom:1px solid var(--l);display:flex
 .intro-body{flex:1;min-width:260px}
 .intro-t{font-size:14px;font-weight:800;margin:0 0 5px;letter-spacing:-.1px}
 .intro-d{font-size:12.5px;line-height:1.75;color:var(--m);margin:0}
+.intro-note{font-size:11px;line-height:1.7;color:var(--m2);margin:9px 0 0;padding-top:9px;border-top:1px dashed var(--l)}
+.intro-note b{color:var(--m);font-weight:700}
 .intro-tag{font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:6px;background:var(--bs);color:var(--b);flex:none;white-space:nowrap}
 
 .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
@@ -218,9 +220,13 @@ header{height:56px;background:#fff;border-bottom:1px solid var(--l);display:flex
   <div class="intro-bar">
     <div class="intro-body">
       <div class="intro-t">这个质检台是什么</div>
-      <p class="intro-d">一个用于评估电商 AI 客服回答质量的质检工具原型。面向 AI 产品、客服运营、标注团队，帮助快速定位 Badcase、统一评测口径、跟踪优化回归。</p>
+      <p class="intro-d">一个面向电商 AI 客服场景的质量评测与持续优化工作台，覆盖 Evaluation Set → Ground Truth → 质检评分 → 风险识别 → Badcase 归因 → 优化 → 回归验证的完整链路。</p>
+      <p class="intro-note">
+        <b>项目定位</b>　不是传统的 AI 客服聊天机器人 Demo，而是围绕「评测—质检—优化—验证」建立的产品原型。<br>
+        <b>产品边界</b>　不接真实订单/物流/CRM API，不使用真实企业客服数据，不宣称 LLM/RAG 已上线，不把模拟 Eval Set 当生产数据。
+      </p>
     </div>
-    <span class="intro-tag">作品集 Demo · 10 条示例数据</span>
+    <span class="intro-tag">作品集 Demo · 10 条示例数据 · 模拟数据</span>
   </div>
   <div class="stats" id="stats"></div>
 </div>
